@@ -198,6 +198,19 @@ installMinikube
 addToLogDt "Initialization complete!!!" y
 exit
 
+addAliases
+initSystemd
+initKeyrings
+
+installPackages
+installHelm
+installMinikube
+
+
+
+addToLogDt "Initialization complete!!!" y
+exit
+
 
 
 
