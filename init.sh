@@ -30,7 +30,8 @@ cleanUp()
 initSystemd()
 {
   addToLogDt "Ensuring systemd is running before continuing" y
-  if [ -z $(ps aux | grep -v grep | grep systemd) ]; then
+  SYSD=$(ps aux | grep -v grep | grep systemd)
+  if [ -z $SYSD ]; then
     addToLogDt "- systemd is not running. Begining install..." y
     git clone https://github.com/Tyler-Laskey/ubuntu-wsl2-systemd-script.git ~/ubuntu-wsl2-systemd-script
     cd ~/ubuntu-wsl2-systemd-script
