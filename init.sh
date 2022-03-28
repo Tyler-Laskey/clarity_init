@@ -35,7 +35,10 @@ initSystemd()
     git clone https://github.com/Tyler-Laskey/ubuntu-wsl2-systemd-script.git ~/ubuntu-wsl2-systemd-script
     cd ~/ubuntu-wsl2-systemd-script
     bash install.sh
-    addToLogDt "- Please quit ubuntu and restart. Once complete run this init.sh script again."
+    addToLogDt "- Please quit ubuntu and restart. Once complete run this init.sh script again." y
+    exit
+  else
+    addToLogDt "- systemd is running."
   fi
 }
 
