@@ -117,7 +117,7 @@ if [ -e ${LST} ]; then
   addToLogDt "-${SECTION} source exists" y
 else
   addToLogDt "-Adding ${SECTION} source" y
-  echo "deb [signed-by=${KEYRING}] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee ${LST} |& -a .log
+  echo "deb [signed-by=${KEYRING}] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee ${LST} |& tee -a .log
 fi
 echo "${SECTION} complete"
 
@@ -150,7 +150,7 @@ if [ -e ${LST} ]; then
   addToLogDt "-${SECTION} source exists" y
 else
   addToLogDt "-Adding ${SECTION} source" y
-  echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee ${LST} |& -a .log
+  echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee ${LST} |& tee -a .log
 fi
 echo "${SECTION} complete"
 
