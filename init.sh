@@ -56,7 +56,7 @@ initKeyrings()
 
   SRC_URL="https://download.docker.com/linux/ubuntu/gpg"
   KEYRING="/usr/share/keyrings/docker-archive-keyring.gpg"
-  ST_FILE="staging/docker-gpg"
+  ST_FILE="${STAGING}/docker-gpg"
   LST="/etc/apt/sources.list.d/docker.list"
 
   # import docker key
@@ -90,7 +90,7 @@ initKeyrings()
 
   SRC_URL="https://packages.cloud.google.com/apt/doc/apt-key.gpg"
   KEYRING="/usr/share/keyrings/kubernetes-archive-keyring.gpg"
-  ST_FILE="staging/kubernetes-gpg"
+  ST_FILE="${STAGING}/kubernetes-gpg"
   LST="/etc/apt/sources.list.d/kubernetes.list"
 
   # import Kubernetes key
@@ -129,11 +129,12 @@ installPackages()
 
 installHelm()
 {
+  STAGING=~/staging
   addToLogDt "Installing helm" y
-  mkdir -p ~/clarity_init/staging
-  cd ~/clarity_init/staging
+  mkdir -p $STAGING
+  cd $STAGING
   sudo rm -r helm*
-  wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz
+  wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz -o $STAGING/helm-v3.4.1-linux-amd64.tar.gz
   tar xvf helm-v3.4.1-linux-amd64.tar.gz
   mv linux-amd64/helm /usr/local/bin
   rm helm-v3.4.1-linux-amd64.tar.gz
@@ -142,8 +143,10 @@ installHelm()
 
 installMinikube()
 {
+  STAGING=~/staging
+  mkdir -p $STAGING
   addToLogDt "Installing minikube" y
-  wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 -o ~/clarity_init/staging/minikube
+  wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 -o $STAGING/minikube
   cp minikube /usr/local/bin/minikube
   chmod +x /usr/local/bin/minikube
 
@@ -169,6 +172,7 @@ addAliases()
   if [ -z ${cat ~/.bash_aliases | grep " psx"} ]; then
     echo "alias psx='ps aux | grep -v grep'" >> ~/.bash_aliases
   fi
+  
   # echo "alias py3='python3'" >> ~/.bash_aliases
   # echo "" >> ~/.bash_aliases
   # echo "" >> ~/.bash_aliases
@@ -184,7 +188,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 mkdir -p staging
-
+STAGING=~/staging
 addAliases
 initSystemd
 initKeyrings
@@ -192,20 +196,6 @@ initKeyrings
 installPackages
 installHelm
 installMinikube
-
-
-
-addToLogDt "Initialization complete!!!" y
-exit
-
-addAliases
-initSystemd
-initKeyrings
-
-installPackages
-installHelm
-installMinikube
-
 
 
 addToLogDt "Initialization complete!!!" y
