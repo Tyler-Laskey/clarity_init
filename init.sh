@@ -173,6 +173,28 @@ installMinikube()
   chmod +x /usr/local/bin/minikube
 
 }
+addAliases()
+{
+  addToLogDt "creating aliases" y
+
+  if [ -z ${cat ~/.bash_aliases | grep " \.\."} ]; then
+    echo "alias ..='cd ..'" >> ~/.bash_aliases  
+  fi
+  
+  if [ -z ${cat ~/.bash_aliases | grep " \.\.\."} ]; then
+    echo "alias ...='cd ../..'" >> ~/.bash_aliases
+  fi
+  if [ -z ${cat ~/.bash_aliases | grep " kcat"} ]; then
+    echo "alias kcat='kafkacat'" >> ~/.bash_aliases
+  fi
+  if [ -z ${cat ~/.bash_aliases | grep " psx"} ]; then
+    echo "alias psx='ps aux | grep -v grep'" >> ~/.bash_aliases
+  fi
+  # echo "alias py3='python3'" >> ~/.bash_aliases
+  # echo "" >> ~/.bash_aliases
+  # echo "" >> ~/.bash_aliases
+  # echo "" >> ~/.bash_aliases
+}
 
 
 addToLogDt "Initializing Clarity development environment" y
@@ -187,6 +209,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 
+addAliases
 initSystemd
 initKeyrings
 
