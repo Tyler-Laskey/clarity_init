@@ -24,7 +24,7 @@ addToLogDt()
 
 cleanUp()
 {
-  rm -r staging/
+  rm -r ~/staging
 }
 
 initSystemd()
@@ -129,9 +129,7 @@ installPackages()
 
 installHelm()
 {
-  STAGING=~/staging
   addToLogDt "Installing helm" y
-  mkdir -p $STAGING
   cd $STAGING
   sudo rm -r helm*
   wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz -o $STAGING/helm-v3.4.1-linux-amd64.tar.gz
@@ -143,8 +141,6 @@ installHelm()
 
 installMinikube()
 {
-  STAGING=~/staging
-  mkdir -p $STAGING
   addToLogDt "Installing minikube" y
   wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 -o $STAGING/minikube
   cp minikube /usr/local/bin/minikube
@@ -187,8 +183,8 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-mkdir -p staging
 STAGING=~/staging
+mkdir -p $STAGING
 addAliases
 initSystemd
 initKeyrings
