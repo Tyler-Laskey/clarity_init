@@ -55,6 +55,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+initSystemd
 
 SECTION="docker"
 addToLogDt "Checking ${SECTION} keyring" y
