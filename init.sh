@@ -79,7 +79,7 @@ proxyPrepWindows()
     rm -rf $PROXY_WIN/corp_proxy
   fi
   
-  mkdir -p $TMP_PROXY
+  # mkdir -p $TMP_PROXY
   mkdir -p $PROXY_WIN/corp_proxy
 
   cd $TMP_PROXY
