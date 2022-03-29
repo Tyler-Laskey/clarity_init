@@ -41,7 +41,7 @@ proxyPrep()
   fi
   addToLogDt "Applying 'fix' for proxy so that wsl is able to access corp VPN" y
 
-  proxyPrepWindows
+  proxyPrepWindows $STAGING
 
   
   # check if the wsl config exists
@@ -62,15 +62,29 @@ proxyPrep()
 
 proxyPrepWindows()
 {
+  if ! [ -e $1 ]; then 
+    STAGING=$1
+    addToLogDt "path not passed in to proxyPrep function"
+    exit 0
+  fi
   addToLogDt "-Grabbing windows portion of proxy patch" y
+
+  TMP_PROXY=/tmp
   PROXY_WIN=/mnt/c/wsl
+  
+  if [ -e "$TMP_PROXY/corp-proxy" ];then
+    rm -rf $TMP_PROXY/corp-proxy
+  fi
   if [ -e "$PROXY_WIN/corp_proxy" ];then
     rm -rf $PROXY_WIN/corp_proxy
   fi
   
-  mkdir -p $PROXY_WIN
-  cd $PROXY_WIN
+  mkdir -p $TMP_PROXY
+  mkdir -p $PROXY_WIN/corp_proxy
+
+  cd $TMP_PROXY
   git clone https://github.com/Tyler-Laskey/corp-proxy
+  cp -r $TMP_PROXY/corp-proxy/* $PROXY_WIN/corp_proxy
   addToLogDt "-Windows portion of proxy patch is download into c:\wsl\corp_proxy" y
 }
 

@@ -1,10 +1,10 @@
 
 touch ~/.bash_aliases
-# if [ -z ${cat ~/.bash_aliases | grep " \\.\\."} ]; then
+# if [ -z $(cat ~/.bash_aliases | grep " \.\.") ]; then
 #   echo "alias ..='cd ..'" >> ~/.bash_aliases  
 # fi
 
-# if [ -z ${cat ~/.bash_aliases | grep " \.\.\."} ]; then
+# if [ -z $(cat ~/.bash_aliases | grep " \.\.\.") ]; then
 #   echo "alias ...='cd ../..'" >> ~/.bash_aliases
 # fi
 
