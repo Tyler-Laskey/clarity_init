@@ -35,6 +35,10 @@ cleanUp()
 proxyPrep()
 {
   addToLogDt "Applying 'fix' for proxy so that wsl is able to access corp VPN" y
+
+  proxyPrepWindows
+
+  
   # check if the wsl config exists
   if [ -e /etc/wsl.conf ]; then
     # We only need to do something if this is missing
@@ -49,6 +53,20 @@ proxyPrep()
   curl -fsSL https://raw.githubusercontent.com/Tyler-Laskey/clarity_init/main/wsl_dns.py -o ~/staging/wsl_dns.py
   cp -f ~/staging/wsl_dns.py /opt/wsl_dns.py
   chmod +x /opt/wsl_dns.py
+}
+
+proxyPrepWindows()
+{
+  addToLogDt "-Grabbing windows portion of proxy patch" y
+  PROXY_WIN=/mnt/c/wsl
+  if [ -e "$PROXY_WIN/corp_proxy" ];then
+  rm -rf $PROXY_WIN/corp_proxy
+  fi
+  mkdir -p $PROXY_WIN
+  cd $PROXY_WIN
+  git clone https://github.com/Tyler-Laskey/corp-proxy
+  addToLogDt "-Windows portion of proxy patch is download into c:\wsl\corp_proxy" y
+  
 }
 
 initSystemd()
