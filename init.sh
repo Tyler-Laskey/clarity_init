@@ -152,7 +152,7 @@ installPackages()
   addToLogDt "Installing required apps" y
   apt update
   apt upgrade
-  apt install -y apt-transport-https ca-certificates conntrack docker-ce docker-ce-cli containerd containerd.io python3 python3-pip python3-venv kafkacat jq unzip libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev ca-certificates curl gnupg lsb-release apt-transport-https kubectl
+  apt install -yf apt-transport-https ca-certificates conntrack docker-ce docker-ce-cli containerd containerd.io python3 python3-pip python3-venv kafkacat jq unzip libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev ca-certificates curl gnupg lsb-release apt-transport-https kubectl
 }
 
 installHelm()
