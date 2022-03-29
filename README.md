@@ -12,3 +12,8 @@ After restarting ubuntu run the following commands:
 cd ~/clarity_init
 sudo ./init.sh
 ```
+
+To apply the proxy patch specifically please use the **--proxy** argument and this will apply the linux portion of the patch.
+```sh
+sudo ./init.sh --proxy
+```
