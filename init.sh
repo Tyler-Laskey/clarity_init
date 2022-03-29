@@ -157,24 +157,35 @@ installPackages()
 
 installHelm()
 {
-  addToLogDt "Installing helm" y
-  cd $STAGING
-  sudo rm -r helm*
-  wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz -o $STAGING/helm-v3.4.1-linux-amd64.tar.gz
-  tar xvf helm-v3.4.1-linux-amd64.tar.gz
-  mv linux-amd64/helm /usr/local/bin
-  rm helm-v3.4.1-linux-amd64.tar.gz
-  rm -rf linux-amd64  
+  addToLogDt "Checking Helm install"
+  if ! [ -e /usr/local/bin/helm ];then
+    addToLogDt "-Helm not detected, installing..." y
+    cd $STAGING
+    sudo rm -r helm*
+    wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz -o $STAGING/helm-v3.4.1-linux-amd64.tar.gz
+    tar xvf helm-v3.4.1-linux-amd64.tar.gz
+    mv linux-amd64/helm /usr/local/bin
+    rm helm-v3.4.1-linux-amd64.tar.gz
+    rm -rf linux-amd64
+  else
+    addToLogDt "-Helm detected, skipping install" y
+  fi
+    
 }
 
 installMinikube()
 {
-  addToLogDt "Installing minikube" y
-  wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 -o $STAGING/minikube
-  cp minikube /usr/local/bin/minikube
-  chmod +x /usr/local/bin/minikube
-
+  addToLogDt "Checking minikube install"
+  if ! [ -e /usr/local/bin/minikube ];then
+    addToLogDt "- Minikube not detected, installing..." y
+    wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 -o $STAGING/minikube
+    cp minikube /usr/local/bin/minikube
+    chmod +x /usr/local/bin/minikube
+  else
+    addToLogDt "-Minikube detected, skipping install" y
+  fi
 }
+
 addAliases()
 {
   addToLogDt "creating aliases" y
