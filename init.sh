@@ -240,8 +240,8 @@ addAliases()
 {
   addToLogDt "creating aliases" y
   
-  touch ~/.bash_aliases
-
+  ALIAS_FILE=/etc/bash.bashrc
+  touch $ALIAS_FILE
   # if [ -z ${cat ~/.bash_aliases | grep " \\.\\."} ]; then
   #   echo "alias ..='cd ..'" >> ~/.bash_aliases  
   # fi
@@ -250,16 +250,16 @@ addAliases()
   #   echo "alias ...='cd ../..'" >> ~/.bash_aliases
   # fi
 
-  if [ -z ${cat ~/.bash_aliases | grep " kcat"} ]; then
-    echo "alias kcat='kafkacat'" >> ~/.bash_aliases
+  if [ -z ${cat $ALIAS_FILE | grep " kcat"} ]; then
+    echo "alias kcat='kafkacat'" >> $ALIAS_FILE
   fi
 
-  if [ -z ${cat ~/.bash_aliases | grep " psx"} ]; then
-    echo "alias psx='ps aux | grep -v grep'" >> ~/.bash_aliases
+  if [ -z ${cat $ALIAS_FILE | grep " psx"} ]; then
+    echo "alias psx='ps aux | grep -v grep'" >> $ALIAS_FILE
   fi
   
-  if [ -z ${cat ~/.bash_aliases | grep " py3"} ]; then
-    echo "alias py3='python3'" >> ~/.bash_aliases
+  if [ -z ${cat $ALIAS_FILE | grep " py3"} ]; then
+    echo "alias py3='python3'" >> $ALIAS_FILE
   fi
   
   # echo "" >> ~/.bash_aliases
@@ -298,7 +298,7 @@ configureDocker()
 
 
 
-STAGING=~/staging
+STAGING=/tmp/staging
 mkdir -p $STAGING
 addAliases
 initSystemd $STAGING
@@ -309,7 +309,7 @@ installHelm $STAGING
 installMinikube $STAGING
 
 configureDocker
-
+source ~/.bashrc
 addToLogDt "Initialization complete!!!" y
 exit
 
