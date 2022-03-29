@@ -34,6 +34,11 @@ cleanUp()
 
 proxyPrep()
 {
+  if ! [ -e $1 ]; then 
+    STAGING=$1
+    addToLogDt "path not passed in to proxyPrep function"
+    exit 0
+  fi
   addToLogDt "Applying 'fix' for proxy so that wsl is able to access corp VPN" y
 
   proxyPrepWindows
@@ -46,11 +51,11 @@ proxyPrep()
     if [ -z "$TXT" ]; then 
       printf "[network]\ngenerateResolveConf = false\n" | tee -a /etc/wsl.conf
     fi
-  else echo "not exist"
+  else
     printf "[network]\ngenerateResolveConf = false\n" | tee /etc/wsl.conf
   fi
 
-  curl -fsSL https://raw.githubusercontent.com/Tyler-Laskey/clarity_init/main/wsl_dns.py -o ~/staging/wsl_dns.py
+  curl -fsSL https://raw.githubusercontent.com/Tyler-Laskey/clarity_init/main/wsl_dns.py -o $STAGING/wsl_dns.py
   cp -f ~/staging/wsl_dns.py /opt/wsl_dns.py
   chmod +x /opt/wsl_dns.py
 }
@@ -60,18 +65,23 @@ proxyPrepWindows()
   addToLogDt "-Grabbing windows portion of proxy patch" y
   PROXY_WIN=/mnt/c/wsl
   if [ -e "$PROXY_WIN/corp_proxy" ];then
-  rm -rf $PROXY_WIN/corp_proxy
+    rm -rf $PROXY_WIN/corp_proxy
   fi
+  
   mkdir -p $PROXY_WIN
   cd $PROXY_WIN
   git clone https://github.com/Tyler-Laskey/corp-proxy
   addToLogDt "-Windows portion of proxy patch is download into c:\wsl\corp_proxy" y
-  
 }
 
 initSystemd()
-{
-  proxyPrep
+{ 
+  if ! [ -e $1 ]; then 
+    STAGING=$1
+    addToLogDt "path not passed in to initSystemd function"
+    exit 0
+  fi
+  proxyPrep $STAGING
 
   addToLogDt "Ensuring systemd is running before continuing" y
   SYSD=$(ps aux | grep -v grep | grep systemd)
@@ -97,6 +107,12 @@ initSystemd()
 
 initKeyrings()
 {
+  if ! [ -e $1 ]; then 
+    STAGING=$1
+    addToLogDt "path not passed in to initKeyrings function"
+    exit 0
+  fi
+
   SECTION="docker"
   addToLogDt "Checking ${SECTION} keyring" y
 
@@ -177,16 +193,22 @@ installPackages()
 
 installHelm()
 {
+  if ! [ -e $1 ]; then 
+    STAGING=$1
+    addToLogDt "path not passed in to installHelm function"
+    exit 0
+  fi
   addToLogDt "Checking Helm install"
+  
   if ! [ -e /usr/local/bin/helm ];then
     addToLogDt "-Helm not detected, installing..." y
+    HELM_VERSION=helm-v3.4.1-linux-amd64.tar.gz
     cd $STAGING
-    sudo rm -r helm*
-    wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz -o $STAGING/helm-v3.4.1-linux-amd64.tar.gz
-    tar xvf helm-v3.4.1-linux-amd64.tar.gz
-    mv linux-amd64/helm /usr/local/bin
-    rm helm-v3.4.1-linux-amd64.tar.gz
-    rm -rf linux-amd64
+    rm -rf $HELM_VERSION
+    rm -rf linux-amd64*
+    wget https://get.helm.sh/$HELM_VERSION
+    tar xvf $HELM_VERSION
+    cp linux-amd64/helm /usr/local/bin
   else
     addToLogDt "-Helm detected, skipping install" y
   fi
@@ -196,6 +218,12 @@ installHelm()
 installMinikube()
 {
   addToLogDt "Checking minikube install"
+  if ! [ -e $1 ]; then 
+    STAGING=$1
+    addToLogDt "path not passed in to installMinikube function"
+    exit 0
+  fi
+  
   if ! [ -e /usr/local/bin/minikube ];then
     addToLogDt "- Minikube not detected, installing..." y
     cd $STAGING
@@ -257,7 +285,10 @@ if ! [ -z $ARG_PROXY ]; then
   exit
 fi
 
-
+configureDocker()
+{
+  printf "${USER} ALL=(ALL) NOPASSWD: /usr/bin/dockerd\n" >> /etc/sudoers
+}
 
 
 
@@ -270,13 +301,14 @@ fi
 STAGING=~/staging
 mkdir -p $STAGING
 addAliases
-initSystemd
-initKeyrings
+initSystemd $STAGING
+initKeyrings $STAGING
 
 installPackages
-installHelm
-installMinikube
+installHelm $STAGING
+installMinikube $STAGING
 
+configureDocker
 
 addToLogDt "Initialization complete!!!" y
 exit
