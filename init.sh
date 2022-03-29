@@ -34,44 +34,10 @@ cleanUp()
 
 proxyPrep()
 {
-  if ! [ -e $1 ]; then 
-    STAGING=$1
-    addToLogDt "path not passed in to proxyPrep function"
-    exit 0
-  fi
   addToLogDt "Applying 'fix' for proxy so that wsl is able to access corp VPN" y
-
-  proxyPrepWindows $STAGING
-
-  
-  # check if the wsl config exists
-  if [ -e /etc/wsl.conf ]; then
-    # We only need to do something if this is missing
-    TXT=$(cat /etc/wsl.conf | grep generateResolveConf)
-    if [ -z "$TXT" ]; then 
-      printf "[network]\ngenerateResolveConf = false\n" | tee -a /etc/wsl.conf
-    fi
-  else
-    printf "[network]\ngenerateResolveConf = false\n" | tee /etc/wsl.conf
-  fi
-
-  curl -fsSL https://raw.githubusercontent.com/Tyler-Laskey/clarity_init/main/wsl_dns.py -o $STAGING/wsl_dns.py
-  cp -f ~/staging/wsl_dns.py /opt/wsl_dns.py
-  chmod +x /opt/wsl_dns.py
-}
-
-proxyPrepWindows()
-{
-  if ! [ -e $1 ]; then 
-    STAGING=$1
-    addToLogDt "path not passed in to proxyPrep function"
-    exit 0
-  fi
   addToLogDt "-Grabbing windows portion of proxy patch" y
-
   TMP_PROXY=/tmp
   PROXY_WIN=/mnt/c/wsl
-  
   if [ -e "$TMP_PROXY/corp-proxy" ];then
     rm -rf $TMP_PROXY/corp-proxy
   fi
@@ -84,8 +50,24 @@ proxyPrepWindows()
 
   cd $TMP_PROXY
   git clone https://github.com/Tyler-Laskey/corp-proxy
-  cp -r $TMP_PROXY/corp-proxy/* $PROXY_WIN/corp_proxy
+  TMP_PROXY=$TMP_PROXY/corp-proxy
+  cp -r $TMP_PROXY/* $PROXY_WIN/corp_proxy
   addToLogDt "-Windows portion of proxy patch is download into c:\wsl\corp_proxy" y
+  
+  # check if the wsl config exists
+  if [ -e /etc/wsl.conf ]; then
+    # We only need to do something if this is missing
+    TXT=$(cat /etc/wsl.conf | grep generateResolveConf)
+    if [ -z "$TXT" ]; then 
+      printf "[network]\ngenerateResolveConf = false\n" | tee -a /etc/wsl.conf
+    fi
+  else
+    printf "[network]\ngenerateResolveConf = false\n" | tee /etc/wsl.conf
+  fi
+
+  # curl -fsSL https://raw.githubusercontent.com/Tyler-Laskey/clarity_init/main/wsl_dns.py -o $STAGING/wsl_dns.py
+  cp -f $TMP_PROXY/wsl_dns.py /opt/wsl_dns.py
+  chmod +x /opt/wsl_dns.py
 }
 
 initSystemd()
