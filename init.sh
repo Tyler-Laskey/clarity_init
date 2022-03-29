@@ -214,7 +214,7 @@ if ! [ -z $ARG_PROXY ]; then
   echo "-------------------------"
   addToLogDt "Please quit ubuntu and run the windows command" y
   addToLogDt "          WSL --Shutdown" y
-  addToLogDt "Once complete run run ubuntu again." y
+  addToLogDt "Once complete run this init.sh script to finish setup." y
   echo "-------------------------"
   echo "-----!!!ATTENTION!!!-----"
   echo "-------------------------"
