@@ -89,6 +89,8 @@ initSystemd()
     echo "-------------------------"
     echo "-----!!!ATTENTION!!!-----"
     echo "-------------------------"
+    addToLogDt "Windows portion of proxy patch is download into c:\wsl\corp_proxy" y
+    addToLogDt "" y
     addToLogDt "Please quit ubuntu and run the windows command" y
     addToLogDt "          WSL --Shutdown" y
     addToLogDt "Once complete run this init.sh script again." y
