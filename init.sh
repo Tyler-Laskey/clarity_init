@@ -208,7 +208,10 @@ addAliases()
     echo "alias psx='ps aux | grep -v grep'" >> ~/.bash_aliases
   fi
   
-  # echo "alias py3='python3'" >> ~/.bash_aliases
+  if [ -z ${cat ~/.bash_aliases | grep " py3"} ]; then
+    echo "alias py3='python3'" >> ~/.bash_aliases
+  fi
+  
   # echo "" >> ~/.bash_aliases
   # echo "" >> ~/.bash_aliases
   # echo "" >> ~/.bash_aliases
