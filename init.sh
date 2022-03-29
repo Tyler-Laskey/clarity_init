@@ -180,9 +180,11 @@ installMinikube()
   addToLogDt "Checking minikube install"
   if ! [ -e /usr/local/bin/minikube ];then
     addToLogDt "- Minikube not detected, installing..." y
-    wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 -o $STAGING/minikube
-    cp minikube /usr/local/bin/minikube
-    chmod +x /usr/local/bin/minikube
+    cd $STAGING
+    sudo rm -r minikube*
+    wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+    cp minikube-linux-amd64 /usr/local/bin/minikube
+    chmod 755 /usr/local/bin/minikube
   else
     addToLogDt "-Minikube detected, skipping install" y
   fi
