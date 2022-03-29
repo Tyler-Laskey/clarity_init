@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ $EUID -ne 0 ]]; then
+   addToLogDt "This script must be run as root" y
+   exit 1
+fi
+
 # add a message to the log file
 addToLog()
 {
@@ -27,8 +32,29 @@ cleanUp()
   rm -r ~/staging
 }
 
+proxyPrep()
+{
+  addToLogDt "Applying 'fix' for proxy so that wsl is able to access corp VPN" y
+  # check if the wsl config exists
+  if [ -e /etc/wsl.conf ]; then
+    # We only need to do something if this is missing
+    TXT=$(cat /etc/wsl.conf | grep generateResolveConf)
+    if [ -z "$TXT" ]; then 
+      printf "[network]\ngenerateResolveConf = false\n" | tee -a /etc/wsl.conf
+    fi
+  else echo "not exist"
+    printf "[network]\ngenerateResolveConf = false\n" | tee /etc/wsl.conf
+  fi
+
+  curl -fsSL https://raw.githubusercontent.com/Tyler-Laskey/clarity_init/main/wsl_dns.py -o ~/staging/wsl_dns.py
+  cp -f ~/staging/wsl_dns.py /opt/wsl_dns.py
+  chmod +x /opt/wsl_dns.py
+}
+
 initSystemd()
 {
+  proxyPrep
+
   addToLogDt "Ensuring systemd is running before continuing" y
   SYSD=$(ps aux | grep -v grep | grep systemd)
   if [ -z $SYSD ]; then
@@ -36,13 +62,15 @@ initSystemd()
     git clone https://github.com/Tyler-Laskey/ubuntu-wsl2-systemd-script.git ~/ubuntu-wsl2-systemd-script
     cd ~/ubuntu-wsl2-systemd-script
     bash install.sh --force
-    echo "--------------------"
-    echo "--------------------"
-    echo "--------------------"
-    addToLogDt "***Please quit ubuntu and relaunch. Once complete run this init.sh script again.***" y
-    echo "--------------------"
-    echo "--------------------"
-    echo "--------------------"
+    echo "-------------------------"
+    echo "-----!!!ATTENTION!!!-----"
+    echo "-------------------------"
+    addToLogDt "Please quit ubuntu and run the windows command" y
+    addToLogDt "          WSL --Shutdown" y
+    addToLogDt "Once complete run this init.sh script again." y
+    echo "-------------------------"
+    echo "-----!!!ATTENTION!!!-----"
+    echo "-------------------------"
     exit
   else
     addToLogDt "- systemd is running."
@@ -175,13 +203,33 @@ addAliases()
   # echo "" >> ~/.bash_aliases
 }
 
-
 addToLogDt "Initializing Clarity development environment" y
 
-if [[ $EUID -ne 0 ]]; then
-   addToLogDt "This script must be run as root" y
-   exit 1
+ARG_PROXY=$(echo "$*" | sed 's/[A-Z]/\L&/g' | grep "\-\-proxy")
+if ! [ -z $ARG_PROXY ]; then
+  addToLogDt "Applying proxy patch" y
+  proxyPrep
+  echo "-------------------------"
+  echo "-----!!!ATTENTION!!!-----"
+  echo "-------------------------"
+  addToLogDt "Please quit ubuntu and run the windows command" y
+  addToLogDt "          WSL --Shutdown" y
+  addToLogDt "Once complete run this init.sh script to finish setup." y
+  echo "-------------------------"
+  echo "-----!!!ATTENTION!!!-----"
+  echo "-------------------------"
+  exit
 fi
+
+
+
+
+
+
+
+
+
+
 
 STAGING=~/staging
 mkdir -p $STAGING
