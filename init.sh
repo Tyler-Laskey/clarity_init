@@ -24,7 +24,25 @@ addToLogDt()
 
 cleanUp()
 {
-  rm -r staging/
+  rm -r ~/staging
+}
+
+proxyPrep()
+{
+  # check if the wsl config exists
+  if [ -e /etc/wsl.conf ]; then
+    # We only need to do something if this is missing
+    TXT=$(cat /etc/wsl.conf | grep generateResolveConf)
+    if [ -z "$TXT" ]; then 
+      printf "[network]\ngenerateResolveConf = false\n" | tee -a /etc/wsl.conf
+    fi
+  else echo "not exist"
+    printf "[network]\ngenerateResolveConf = false\n" | tee /etc/wsl.conf
+  fi
+
+  curl -fsSL https://raw.githubusercontent.com/Tyler-Laskey/clarity_init/main/wsl_dns.py -o ~/staging/wsl_dns.py
+  cp -f ~/staging/wsl_dns.py /opt/wsl_dns.py
+  chmod +x /opt/wsl_dns.py
 }
 
 initSystemd()
@@ -36,13 +54,15 @@ initSystemd()
     git clone https://github.com/Tyler-Laskey/ubuntu-wsl2-systemd-script.git ~/ubuntu-wsl2-systemd-script
     cd ~/ubuntu-wsl2-systemd-script
     bash install.sh --force
-    echo "--------------------"
-    echo "--------------------"
-    echo "--------------------"
-    addToLogDt "***Please quit ubuntu and relaunch. Once complete run this init.sh script again.***" y
-    echo "--------------------"
-    echo "--------------------"
-    echo "--------------------"
+    echo "-------------------------"
+    echo "-----!!!ATTENTION!!!-----"
+    echo "-------------------------"
+    addToLogDt "Please quit ubuntu and run the windows command" y
+    addToLogDt "          WSL --Shutdown" y
+    addToLogDt "Once complete run this init.sh script again." y
+    echo "-------------------------"
+    echo "-----!!!ATTENTION!!!-----"
+    echo "-------------------------"
     exit
   else
     addToLogDt "- systemd is running."
@@ -56,7 +76,7 @@ initKeyrings()
 
   SRC_URL="https://download.docker.com/linux/ubuntu/gpg"
   KEYRING="/usr/share/keyrings/docker-archive-keyring.gpg"
-  ST_FILE="staging/docker-gpg"
+  ST_FILE="${STAGING}/docker-gpg"
   LST="/etc/apt/sources.list.d/docker.list"
 
   # import docker key
@@ -90,7 +110,7 @@ initKeyrings()
 
   SRC_URL="https://packages.cloud.google.com/apt/doc/apt-key.gpg"
   KEYRING="/usr/share/keyrings/kubernetes-archive-keyring.gpg"
-  ST_FILE="staging/kubernetes-gpg"
+  ST_FILE="${STAGING}/kubernetes-gpg"
   LST="/etc/apt/sources.list.d/kubernetes.list"
 
   # import Kubernetes key
@@ -130,10 +150,9 @@ installPackages()
 installHelm()
 {
   addToLogDt "Installing helm" y
-  mkdir -p ~/clarity_init/staging
-  cd ~/clarity_init/staging
+  cd $STAGING
   sudo rm -r helm*
-  wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz
+  wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz -o $STAGING/helm-v3.4.1-linux-amd64.tar.gz
   tar xvf helm-v3.4.1-linux-amd64.tar.gz
   mv linux-amd64/helm /usr/local/bin
   rm helm-v3.4.1-linux-amd64.tar.gz
@@ -143,7 +162,7 @@ installHelm()
 installMinikube()
 {
   addToLogDt "Installing minikube" y
-  wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 -o ~/clarity_init/staging/minikube
+  wget https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 -o $STAGING/minikube
   cp minikube /usr/local/bin/minikube
   chmod +x /usr/local/bin/minikube
 
@@ -169,6 +188,7 @@ addAliases()
   if [ -z ${cat ~/.bash_aliases | grep " psx"} ]; then
     echo "alias psx='ps aux | grep -v grep'" >> ~/.bash_aliases
   fi
+  
   # echo "alias py3='python3'" >> ~/.bash_aliases
   # echo "" >> ~/.bash_aliases
   # echo "" >> ~/.bash_aliases
@@ -183,8 +203,8 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-mkdir -p staging
-
+STAGING=~/staging
+mkdir -p $STAGING
 addAliases
 initSystemd
 initKeyrings
@@ -192,20 +212,6 @@ initKeyrings
 installPackages
 installHelm
 installMinikube
-
-
-
-addToLogDt "Initialization complete!!!" y
-exit
-
-addAliases
-initSystemd
-initKeyrings
-
-installPackages
-installHelm
-installMinikube
-
 
 
 addToLogDt "Initialization complete!!!" y
