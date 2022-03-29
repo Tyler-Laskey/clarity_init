@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ $EUID -ne 0 ]]; then
+   addToLogDt "This script must be run as root" y
+   exit 1
+fi
+
 # add a message to the log file
 addToLog()
 {
@@ -29,6 +34,7 @@ cleanUp()
 
 proxyPrep()
 {
+  addToLogDt "Applying 'fix' for proxy so that wsl is able to access corp VPN" y
   # check if the wsl config exists
   if [ -e /etc/wsl.conf ]; then
     # We only need to do something if this is missing
@@ -47,6 +53,8 @@ proxyPrep()
 
 initSystemd()
 {
+  proxyPrep
+
   addToLogDt "Ensuring systemd is running before continuing" y
   SYSD=$(ps aux | grep -v grep | grep systemd)
   if [ -z $SYSD ]; then
@@ -195,13 +203,33 @@ addAliases()
   # echo "" >> ~/.bash_aliases
 }
 
-
 addToLogDt "Initializing Clarity development environment" y
 
-if [[ $EUID -ne 0 ]]; then
-   addToLogDt "This script must be run as root" y
-   exit 1
+ARG_PROXY=$(echo "$*" | sed 's/[A-Z]/\L&/g' | grep "\-\-proxy")
+if ! [ -z $ARG_PROXY ]; then
+  addToLogDt "Applying proxy patch" y
+  proxyPrep
+  echo "-------------------------"
+  echo "-----!!!ATTENTION!!!-----"
+  echo "-------------------------"
+  addToLogDt "Please quit ubuntu and run the windows command" y
+  addToLogDt "          WSL --Shutdown" y
+  addToLogDt "Once complete run run ubuntu again." y
+  echo "-------------------------"
+  echo "-----!!!ATTENTION!!!-----"
+  echo "-------------------------"
+  exit
 fi
+
+
+
+
+
+
+
+
+
+
 
 STAGING=~/staging
 mkdir -p $STAGING
