@@ -4,6 +4,8 @@ if [[ $EUID -ne 0 ]]; then
    addToLogDt "This script must be run as root" y
    exit 1
 fi
+# As this script must be run as root, we can get the running username via that variable $SUDO_USER
+SUDO_HOME=/home/$SUDO_USER
 
 # add a message to the log file
 addToLog()
@@ -255,15 +257,90 @@ fi
 
 configureDocker()
 {
-  printf "${USER} ALL=(ALL) NOPASSWD: /usr/bin/dockerd\n" >> /etc/sudoers
+  DOCKER_STATUS=$(sudo -l -U $SUDO_USER | grep dockerd -c)
+  if [ "$DOCKER_STATUS" == 0 ]; then
+    printf "${SUDO_USER} ALL=(ALL) NOPASSWD: /usr/bin/dockerd\n" >> /etc/sudoers
+  fi
 }
 
+CONVERTED_PATH=''
+covertWinPath() {
+    # Converts Windows paths to WSL/Ubuntu paths, prefixing /mnt/driveletter and preserving case of the rest of the arguments,
+    # replacing backslashed with forwardslashes
+    # example: 
+    # Input -> "C:\Share"
+    # Output -> "/mnt/j/Share"
+    # echo "Input --> $1" #for debugging
+    CONVERTED_PATH=$(sed -e 's#^\(.\):#/mnt/\L\1#' -e 's#\\#/#g' <<< "$1")
+    #Group the first character at the beginning of the string. e.g. "C:\Share", select "C" by using () but match only if it has colon as the second character
+    #replace C: with /mnt/c
+    #\L = lowercase , \1 = first group (of single letter)
+    # 2nd part of expression
+    #replaces every \ with /, saving the result into the var line. 
+    #Note it uses another delimiter, #, to make it more readable.
+    # echo "Output --> $line" #for debugging
+    # cd "$line" #change to that directory
+}
 
+generateAliases(){
+  # Create aliases if not existing
+  touch /home/$SUDO_USER/.bash_aliases
 
+  count=$(grep -c "kafkacat" /home/$SUDO_USER/.bash_aliases)
+  if [$count == 0];then
+    echo 'alias kcat="kafkacat"' >> /home/$SUDO_USER/.bash_aliases
+  fi
 
+  # Create aliases if not existing
+  count=$(grep -c "python3" /home/$SUDO_USER/.bash_aliases)
+  if [$count == 0];then
+    echo 'alias py3="python3"' >> /home/$SUDO_USER/.bash_aliases
+  fi
 
+  # Create aliases if not existing
+  count=$(grep -c "psx" /home/$SUDO_USER/.bash_aliases)
+  if [$count == 0];then
+    echo "alias psx='ps aux | grep -v grep'" >> /home/$SUDO_USER/.bash_aliases
+  fi
 
+}
 
+generateLinkedDir(){
+  # Test if clarity folder exists already or not
+  if ! [ -e clarity ]; then
+    echo "This script will create a linked directory to easily find the 'gcp-app-patterning' folder."
+    echo "Please drag and drop the folder where you cloned 'gcp-app-patterning' into this window and press ENTER"
+    read -r GCP_APP_PATTERNING_PATH
+    # echo "You specified '${GCP_APP_PATTERNING_PATH}'"
+    rm -f $SUDO_HOME/clarity
+    ln -s $GCP_APP_PATTERNING_PATH $SUDO_HOME/clarity
+    chown -R $SUDO_USER:$SUDO_USER $SUDO_HOME/clarity
+  fi
+}
+
+pythonVenvInstall(){
+  echo "Initializing '$1' venv"
+  cd $1
+  python3 -m venv venv
+  echo "Installing pip packages"
+  SUBSHELL=$(
+    . $1/venv/bin/activate
+    # echo "VENV python path->> $(which python3)"
+    python3 -m pip install wheel
+    python3 -m pip install -r requirements.txt > pip_results.txt
+  )
+  echo "venv install complete, results can be viewed in $1/pip_results.txt"
+}
+
+initializePython(){
+  cd $CLARITY_HOME
+  pythonVenvInstall "$CLARITY_HOME/flow/src"
+  pythonVenvInstall "$CLARITY_HOME/jirasync/src"
+  pythonVenvInstall "$CLARITY_HOME/pipe/src"
+  pythonVenvInstall "$CLARITY_HOME/sink/src"
+  pythonVenvInstall "$CLARITY_HOME/source/src"
+  pythonVenvInstall "$CLARITY_HOME"
+}
 
 
 STAGING=/tmp/staging
@@ -274,9 +351,16 @@ initKeyrings $STAGING
 installPackages
 installHelm $STAGING
 installMinikube $STAGING
-
 configureDocker
+generateLinkedDir 
+initializePython
+
+
 source ~/.bashrc
+
+
+
+
 addToLogDt "Initialization complete!!!" y
 exit
 
@@ -298,27 +382,6 @@ exit 1
 
 
 
-
-
-# count=$(grep -c "kafkacat" ~/.bash_aliases)
-
-# apt update
-# apt upgrade -y
-
-
-# # Create aliases if not existing
-# count=$(grep -c "kafkacat" ~/.bash_aliases)
-# if [$count == 0];then
-#   echo 'alias kcat="kafkacat"' >> ~/.bash_aliases
-# fi
-
-# # Create aliases if not existing
-# count=$(grep -c "python3" ~/.bash_aliases)
-# if [$count == 0];then
-#   echo 'alias py3="python3"' >> ~/.bash_aliases
-# fi
-
-# TST_EXIST=cat ~/.bash_aliases | grep kafkacat
 
 
 

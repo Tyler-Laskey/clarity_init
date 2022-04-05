@@ -2,3 +2,5 @@ staging/
 log
 test/
 .vscode/
+test.sh
+tlog
