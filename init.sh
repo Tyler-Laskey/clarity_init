@@ -6,6 +6,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 # As this script must be run as root, we can get the running username via that variable $SUDO_USER
 SUDO_HOME=/home/$SUDO_USER
+CLARITY_HOME=$SUDO_HOME/clarity
 
 # add a message to the log file
 addToLog()
