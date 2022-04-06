@@ -4,3 +4,4 @@ test/
 .vscode/
 test.sh
 tlog
+workspace.code-workspace
