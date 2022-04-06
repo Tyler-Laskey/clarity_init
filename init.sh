@@ -188,7 +188,7 @@ installPackages()
   apt update
   apt upgrade
   apt install -y -f containerd
-  apt install -y -f apt-transport-https ca-certificates conntrack docker-ce docker-ce-cli containerd.io python3 python3-pip python3-venv kafkacat jq unzip libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev ca-certificates curl gnupg lsb-release apt-transport-https kubectl
+  apt install -y -f apt-transport-https ca-certificates conntrack docker-ce docker-ce-cli containerd.io python3 python3-pip python3-venv kafkacat jq unzip libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev curl gnupg lsb-release kubectl
   apt autoremove -y
 }
 
@@ -306,44 +306,6 @@ generateAliases(){
 
 }
 
-generateLinkedDir(){
-  # Test if clarity folder exists already or not
-  if ! [ -e clarity ]; then
-    echo "This script will create a linked directory to easily find the 'gcp-app-patterning' folder."
-    echo "Please drag and drop the folder where you cloned 'gcp-app-patterning' into this window and press ENTER"
-    read -r GCP_APP_PATTERNING_PATH
-    # echo "You specified '${GCP_APP_PATTERNING_PATH}'"
-    rm -f $SUDO_HOME/clarity
-    ln -s $GCP_APP_PATTERNING_PATH $SUDO_HOME/clarity
-    chown -R $SUDO_USER:$SUDO_USER $SUDO_HOME/clarity
-  fi
-}
-
-pythonVenvInstall(){
-  echo "Initializing '$1' venv"
-  cd $1
-  python3 -m venv venv
-  echo "Installing pip packages"
-  SUBSHELL=$(
-    . $1/venv/bin/activate
-    # echo "VENV python path->> $(which python3)"
-    python3 -m pip install wheel
-    python3 -m pip install -r requirements.txt > pip_results.txt
-  )
-  echo "venv install complete, results can be viewed in $1/pip_results.txt"
-}
-
-initializePython(){
-  cd $CLARITY_HOME
-  pythonVenvInstall "$CLARITY_HOME/flow/src"
-  pythonVenvInstall "$CLARITY_HOME/jirasync/src"
-  pythonVenvInstall "$CLARITY_HOME/pipe/src"
-  pythonVenvInstall "$CLARITY_HOME/sink/src"
-  pythonVenvInstall "$CLARITY_HOME/source/src"
-  pythonVenvInstall "$CLARITY_HOME"
-}
-
-
 STAGING=/tmp/staging
 mkdir -p $STAGING
 initSystemd $STAGING
@@ -353,15 +315,11 @@ installPackages
 installHelm $STAGING
 installMinikube $STAGING
 configureDocker
-generateLinkedDir 
-initializePython
-
 
 source ~/.bashrc
 
-
-
-
+addToLogDt "InitializingPython..." y
+./initPython.sh
 addToLogDt "Initialization complete!!!" y
 exit
 
@@ -376,46 +334,3 @@ exit
 # run cleanup to remove staging folder
 cleanUp
 exit 1
-
-
-# This command will add the current username to the sudoers file
-# printf "${USER} ALL=(ALL) NOPASSWD: /usr/bin/dockerd\n" >> /etc/sudoers
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# apt-transport-https
-# ca-certificates
-# conntrack
-# docker-ce
-# docker-ce-cli
-# containerd
-# containerd.io
-# python3
-# python3-pip
-# python3-venv
-# kafkacat
-# jq
-# unzip
-# libxcb1-dev
-# libxcb-render0-dev
-# libxcb-shape0-dev
-# libxcb-xfixes0-dev
-# ca-certificates
-# curl
-# gnupg
-# lsb-release
-# apt-transport-https
-# kubectl
