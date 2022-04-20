@@ -65,7 +65,9 @@ pythonVenvInstall(){
   echo "Initializing '$1' venv"
   cd $1
   python3 -m venv venv
-  echo "Installing pip packages"
+  echo "Installing pip packages, this may take a while (>5 minutes)"
+  echo "To view progress open a new linux terminal window and run the following command:"
+  echo "cat $1/pip_results"
   SUBSHELL=$(
     . $1/venv/bin/activate
     cd $1
