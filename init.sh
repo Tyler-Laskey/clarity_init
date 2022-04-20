@@ -140,6 +140,9 @@ installMinikube() {
   else
     addToLogDt "-Minikube detected, skipping install" y
   fi
+
+  # Add user to docker group
+  usermod -aG docker $SUDO_USER && newgrp docker
 }
 
 installPackages() {
